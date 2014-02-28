@@ -19,7 +19,7 @@ Using it
 The plugin currently exposes a single option `bonjour-register` alowing you to register new record
 in the bonjour dns service. You can register CNAME and A records.
 
-Dinamically registering entries allows you to easily implement virtualhosting without messing with /etc/hosts.
+Dinamically registering entries allows you to easily implement virtualhosting without messing with /etc/hosts. (and more important the other people in your lan will see them)
 
 Supposing you are working on the `darthvaderisbetterthanyoda` website, you may want to reach it via the `darthvaderisbetterthanyoda.local` domain without changing the name of your system:
 
