@@ -43,3 +43,22 @@ The `bojour-register` option can take the following parameters:
 `a` (alias `ip`) create an A record mapping to the specified IPv4 address
 
 `unique` if set register the record as a unique bonjour entry (default is shared)
+
+CNAME Shortcut
+==============
+
+If you specify only a hostname as the `bonjour-register` argument, it will be registered as a CNAME for the local hostname. If your hostname is called `deathstar.local` the following config:
+
+```ini
+[uwsgi]
+plugins = bonjour
+bonjour-register = darthvaderisbetterthanyoda.local
+bonjour-register = hansolo.local
+plugins = psgi
+psgi = myapp.pl
+http-socket = :8080
+```
+
+will create 2 CNAME records for darthvaderisbetterthanyoda.local and hansolo.local pointing to deathstar.local.
+
+In same (rare) cases your local hostname could be messy and bonjour is not able to correctly use. In such a case rely to non-shortcut setup, specifying the CNAME (or A) explicitely to a resolvable address.
