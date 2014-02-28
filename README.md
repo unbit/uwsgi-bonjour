@@ -16,7 +16,7 @@ uwsgi --build-plugin uwsgi-bonjour
 Using it
 ========
 
-The plugin currently exposes a single option `bonjour-register` alowing you to register new record
+The plugin currently exposes a single option `bonjour-register` alowing you to register new records
 in the bonjour dns service. You can register CNAME and A records.
 
 Dinamically registering entries allows you to easily implement virtualhosting without messing with /etc/hosts. (and more important the other people in your lan will see them)
