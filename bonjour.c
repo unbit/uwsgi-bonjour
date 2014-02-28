@@ -113,7 +113,7 @@ static void register_a(char *name, char *addr, int unique) {
 static int bonjour_init() {
 
 	char *myself = uwsgi.hostname;
-	if (!uwsgi_endswith(myself, ".local")) {
+	if (!uwsgi_endswith(myself, ".local") && !uwsgi_endswith(myself, ".lan")) {
 		myself = uwsgi_concat2(uwsgi.hostname, ".local");
 	}
 
