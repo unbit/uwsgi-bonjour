@@ -44,7 +44,7 @@ The `bojour-register` option can take the following parameters:
 
 `unique` if set register the record as a unique bonjour entry (default is shared)
 
-CNAME Shortcut
+CNAME shortcut
 ==============
 
 If you specify only a hostname as the `bonjour-register` argument, it will be registered as a CNAME for the local hostname. If your hostname is called `deathstar.local` the following config:
