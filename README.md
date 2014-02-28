@@ -61,4 +61,4 @@ http-socket = :8080
 
 will create 2 CNAME records for darthvaderisbetterthanyoda.local and hansolo.local pointing to deathstar.local.
 
-In same (rare) cases your local hostname could be messy and bonjour is not able to correctly use. In such a case rely to non-shortcut setup, specifying the CNAME (or A) explicitely to a resolvable address.
+In same (rare) cases your local hostname could be messy and bonjour is not able to correctly use it. In such a case rely to non-shortcut setup, specifying the CNAME (or A) explicitely to a resolvable address.
