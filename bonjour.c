@@ -101,6 +101,7 @@ static void *bonjour_loop(void *arg) {
 			uwsgi_log("[uwsgi-bonjour] error %d while processing result\n", error);
 		}
 	}
+	return NULL;
 }
 
 static void bonjour_init() {
