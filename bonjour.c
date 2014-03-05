@@ -7,6 +7,7 @@ static struct uwsgi_bonjour {
 	struct uwsgi_string_list *record;
 } ubonjour;
 
+static DNSServiceRef bonjour_sdref = NULL;
 
 static struct uwsgi_option bonjour_options[] = {
 	{"bonjour-register", required_argument, 0, "register a record in the Bonjour service (default: register a CNAME for the local hostname)", uwsgi_opt_add_string_list, &ubonjour.record, 0},
@@ -58,19 +59,11 @@ error:
 
 static void register_cname(char *name, char *cname, int unique) {
 
-	DNSServiceRef g_dnsRef = NULL;
-
-	DNSServiceErrorType error = DNSServiceCreateConnection(&g_dnsRef);
-	if (error) {
-		uwsgi_log("[uwsgi-bonjour] unable to initialize DNS resolution, error code: %d\n", error);
-		exit(1);
-	}
-
 	DNSServiceFlags f = unique ? kDNSServiceFlagsUnique : kDNSServiceFlagsShared;
 
 	DNSRecordRef r = 0;
 	struct uwsgi_buffer *ub = to_dns(cname, strlen(cname));
-	error = DNSServiceRegisterRecord(g_dnsRef, &r, f, 0, name, kDNSServiceType_CNAME, kDNSServiceClass_IN,
+	DNSServiceErrorType error = DNSServiceRegisterRecord(bonjour_sdref, &r, f, 0, name, kDNSServiceType_CNAME, kDNSServiceClass_IN,
 		ub->pos, ub->buf, 60,
                 dnsCallback, NULL);
 
@@ -79,25 +72,17 @@ static void register_cname(char *name, char *cname, int unique) {
 		exit(1);
 	}
 
-	DNSServiceProcessResult(g_dnsRef);
 	uwsgi_buffer_destroy(ub);
 	uwsgi_log("[uwsgi-bonjour] registered record %s CNAME %s\n", name, cname);
 }
 
 static void register_a(char *name, char *addr, int unique) {
-	DNSServiceRef g_dnsRef = NULL;
-
-        DNSServiceErrorType error = DNSServiceCreateConnection(&g_dnsRef);
-        if (error) {
-                uwsgi_log("[uwsgi-bonjour] unable to initialize DNS resolution, error code: %d\n", error);
-                exit(1);
-        }
 
         DNSServiceFlags f = unique ? kDNSServiceFlagsUnique : kDNSServiceFlagsShared;
 
         DNSRecordRef r = 0;
 	uint32_t ip = inet_addr(addr);
-        error = DNSServiceRegisterRecord(g_dnsRef, &r, f, 0, name, kDNSServiceType_A, kDNSServiceClass_IN,
+        DNSServiceErrorType error = DNSServiceRegisterRecord(bonjour_sdref, &r, f, 0, name, kDNSServiceType_A, kDNSServiceClass_IN,
                 4, &ip, 60,
                 dnsCallback, NULL);
 
@@ -106,11 +91,27 @@ static void register_a(char *name, char *addr, int unique) {
                 exit(1);
         }
 
-        DNSServiceProcessResult(g_dnsRef);
         uwsgi_log("[uwsgi-bonjour] registered record %s A %s\n", name, addr);
 }
 
-static int bonjour_init() {
+static void *bonjour_loop(void *arg) {
+	for(;;) {
+		DNSServiceErrorType error = DNSServiceProcessResult(bonjour_sdref);
+		if (error) {
+			uwsgi_log("[uwsgi-bonjour] error %d while processing result\n", error);
+		}
+	}
+}
+
+static void bonjour_init() {
+
+	if (!ubonjour.record) return;
+
+	DNSServiceErrorType error = DNSServiceCreateConnection(&bonjour_sdref);
+        if (error) {
+                uwsgi_log("[uwsgi-bonjour] unable to initialize DNS resolution, error code: %d\n", error);
+                exit(1);
+        }
 
 	char *myself = uwsgi.hostname;
 	if (!uwsgi_endswith(myself, ".local") && !uwsgi_endswith(myself, ".lan")) {
@@ -163,11 +164,21 @@ static int bonjour_init() {
 	if (myself != uwsgi.hostname)
 		free(myself);
 
-	return 0;
+	// now start a pthread for managing bonjour
+	pthread_t t;
+        pthread_create(&t, NULL, bonjour_loop, NULL);
+}
+
+static void bonjour_close_fd() {
+	if (bonjour_sdref) {
+		close(DNSServiceRefSockFD(bonjour_sdref));
+	}
 }
 
 struct uwsgi_plugin bonjour_plugin = {
 	.name = "bonjour",
 	.options = bonjour_options,
-	.init = bonjour_init,
+	.post_fork = bonjour_close_fd,
+	// we use .post_init instead of .init to avoid the mdsn socket to be closed on reloads
+	.post_init = bonjour_init,
 };
