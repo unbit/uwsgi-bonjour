@@ -138,7 +138,7 @@ static void bonjour_init() {
 			}
 
 			if (!b_name) {
-				uwsgi_log("[uwsgi-bonjour] you need to specift the name key to register a record\n");
+				uwsgi_log("[uwsgi-bonjour] you need to specify the name key to register a record\n");
 				exit(1);
 			}
 			
