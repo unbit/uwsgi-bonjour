@@ -29,6 +29,7 @@ plugins = bonjour
 bonjour-register = name=darthvaderisbetterthanyoda.local,a=127.0.0.1
 plugins = psgi
 psgi = myapp.pl
+master = true
 http-socket = :8080
 ```
 
@@ -55,6 +56,7 @@ plugins = bonjour
 bonjour-register = darthvaderisbetterthanyoda.local
 bonjour-register = hansolo.local
 plugins = psgi
+master = true
 psgi = myapp.pl
 http-socket = :8080
 ```
