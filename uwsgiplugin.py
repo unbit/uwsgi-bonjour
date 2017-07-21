@@ -1,2 +1,2 @@
-NAME='bonjour'
-GCC_LIST=['bonjour']
+NAME = 'bonjour'
+GCC_LIST = ['bonjour']
